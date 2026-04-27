@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Add Item — Warehouse Alert{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+    <h2>➕ Add Inventory Item</h2>
+    <p class="form-subtitle">Add a new item to your warehouse inventory</p>
+
+    <form method="POST" id="add-item-form">
+        <div class="form-group">
+            <label for="name">Item Name</label>
+            <input type="text" name="name" id="name" placeholder="e.g. Steel Bolts" required>
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">Current Quantity</label>
+            <input type="number" name="quantity" id="quantity" placeholder="e.g. 500" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="threshold">Low Stock Threshold</label>
+            <input type="number" name="threshold" id="threshold" placeholder="e.g. 50" min="1" required>
+        </div>
+
+        <button type="submit" id="add-item-submit">📦 Add to Inventory</button>
+    </form>
+
+    <p class="form-footer">
+        <a href="/dashboard">← Back to Dashboard</a>
+    </p>
+</div>
+
+{% endblock %}

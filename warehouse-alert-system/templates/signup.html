@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — Warehouse Alert{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+    <h2>📝 Create Account</h2>
+    <p class="form-subtitle">Join the warehouse monitoring system</p>
+
+    {% if error %}
+        <div class="flash error">❌ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" id="signup-form">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" placeholder="Choose a username" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" placeholder="Create a password" required>
+        </div>
+
+        <button type="submit" id="signup-submit">🚀 Create Account</button>
+    </form>
+
+    <p class="form-footer">
+        Already have an account? <a href="/login">Sign in</a>
+    </p>
+</div>
+
+{% endblock %}

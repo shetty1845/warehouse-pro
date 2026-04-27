@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Warehouse Alert{% endblock %}
+
+{% block content %}
+
+<div class="page-header animate-in">
+    <h1>📊 Inventory Dashboard</h1>
+    <p>Monitor your warehouse stock levels in real time</p>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-row">
+    <div class="stat-card total animate-in">
+        <span class="stat-icon">📦</span>
+        <div class="stat-value">{{ total_items | default(0) }}</div>
+        <div class="stat-label">Total Items</div>
+    </div>
+    <div class="stat-card low animate-in">
+        <span class="stat-icon">🚨</span>
+        <div class="stat-value">{{ low_stock_count | default(0) }}</div>
+        <div class="stat-label">Low Stock Alerts</div>
+    </div>
+    <div class="stat-card safe animate-in">
+        <span class="stat-icon">✅</span>
+        <div class="stat-value">{{ (total_items | default(0)) - (low_stock_count | default(0)) }}</div>
+        <div class="stat-label">In Stock</div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<form action="/search" method="GET" class="search-bar animate-in" id="search-form">
+    <span>🔍</span>
+    <input type="text" name="q" id="searchInput" placeholder="Search inventory items..." value="{{ request.args.get('q', '') }}">
+    <button type="submit">Search</button>
+</form>
+
+<!-- Section Title -->
+<div class="section-title animate-in">
+    <h2>🗃️ Inventory Items</h2>
+    <span class="badge">{{ items | length }} item{{ 's' if items | length != 1 }}</span>
+</div>
+
+<!-- Inventory Grid -->
+{% if items %}
+<div class="grid">
+    {% for item in items %}
+    <div class="card" id="item-{{ item.item_id }}">
+        <div class="item-name">
+            📋 {{ item.name }}
+        </div>
+
+        <div class="item-meta">
+            <span class="meta-badge qty">📊 Qty: {{ item.quantity }}</span>
+            <span class="meta-badge threshold">⚡ Min: {{ item.threshold }}</span>
+        </div>
+
+        {% set qty = item.quantity | int %}
+        {% set thresh = item.threshold | int %}
+        {% if qty <= thresh %}
+            <div class="status-indicator danger">🔴 Low Stock</div>
+        {% elif qty <= thresh * 2 %}
+            <div class="status-indicator warning">🟡 Warning</div>
+        {% else %}
+            <div class="status-indicator safe">🟢 In Stock</div>
+        {% endif %}
+
+        <div class="card-actions">
+            <a href="/update_item/{{ item.item_id }}" class="btn btn-edit btn-sm" id="edit-{{ item.item_id }}">✏️ Update</a>
+            <a href="#" class="btn btn-danger btn-sm btn-delete-trigger"
+               data-name="{{ item.name }}"
+               data-url="/delete/{{ item.item_id }}"
+               id="delete-{{ item.item_id }}">🗑️ Delete</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state animate-in">
+    <span class="empty-icon">📭</span>
+    <h3>No items found</h3>
+    <p>Start by adding your first inventory item to the warehouse</p>
+    <a href="/add_item" class="btn btn-add" id="empty-add-item">➕ Add First Item</a>
+</div>
+{% endif %}
+
+{% endblock %}

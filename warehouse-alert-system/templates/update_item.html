@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Update Stock — Warehouse Alert{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+    <h2>🔄 Update Stock</h2>
+    <p class="form-subtitle">Adjust the quantity for <strong>{{ item.name }}</strong></p>
+
+    <div style="margin-bottom: 20px;">
+        <div class="item-meta" style="justify-content: center;">
+            <span class="meta-badge qty">📊 Current: {{ item.quantity }}</span>
+            <span class="meta-badge threshold">⚡ Min: {{ item.threshold }}</span>
+        </div>
+    </div>
+
+    <form method="POST" id="update-item-form">
+        <div class="form-group">
+            <label for="quantity">New Quantity</label>
+            <input type="number" name="quantity" id="quantity" placeholder="Enter updated quantity" min="0" value="{{ item.quantity }}" required>
+        </div>
+
+        <button type="submit" id="update-item-submit">✅ Update Stock</button>
+    </form>
+
+    <p class="form-footer">
+        <a href="/dashboard">← Back to Dashboard</a>
+    </p>
+</div>
+
+{% endblock %}
