@@ -5,21 +5,17 @@ from datetime import datetime
 from boto3.dynamodb.conditions import Key
 
 
-# -----------------------------
-# 🔌 CONNECT TO DYNAMODB
-# -----------------------------
+# 🔌 CONNECT (IAM ROLE USED)
 dynamodb = boto3.resource(
     'dynamodb',
-    region_name=Config.REGION   # Uses aws configure credentials
+    region_name=Config.REGION
 )
 
 users_table = dynamodb.Table(Config.USERS_TABLE)
 items_table = dynamodb.Table(Config.ITEMS_TABLE)
 
 
-# -----------------------------
-# 👤 USER FUNCTIONS
-# -----------------------------
+# 👤 USERS
 
 def create_user(username, password, email=""):
     try:
@@ -39,8 +35,9 @@ def create_user(username, password, email=""):
 
 def get_user(username):
     try:
+        # Try using index
         response = users_table.query(
-            IndexName='username-index',  # Make sure this exists
+            IndexName='username-index',
             KeyConditionExpression=Key('username').eq(username)
         )
 
@@ -53,12 +50,20 @@ def get_user(username):
 
     except Exception as e:
         print("Get User Error:", e)
+
+        # 🔥 FALLBACK (if index not created)
+        try:
+            response = users_table.scan()
+            for item in response.get('Items', []):
+                if item['username'] == username:
+                    return item
+        except Exception as e2:
+            print("Fallback Scan Error:", e2)
+
         return None
 
 
-# -----------------------------
-# 📦 INVENTORY FUNCTIONS
-# -----------------------------
+# 📦 INVENTORY
 
 def add_item(name, quantity, threshold, category="General", unit="pcs"):
     try:
@@ -80,8 +85,7 @@ def add_item(name, quantity, threshold, category="General", unit="pcs"):
 
 def get_items():
     try:
-        response = items_table.scan()
-        return response.get('Items', [])
+        return items_table.scan().get('Items', [])
     except Exception as e:
         print("Get Items Error:", e)
         return []
@@ -91,10 +95,7 @@ def update_stock(item_id, quantity):
     try:
         items_table.update_item(
             Key={'item_id': item_id},
-            UpdateExpression="""
-                SET quantity = :q,
-                    last_updated = :t
-            """,
+            UpdateExpression="SET quantity=:q, last_updated=:t",
             ExpressionAttributeValues={
                 ':q': int(quantity),
                 ':t': datetime.utcnow().isoformat()
@@ -108,26 +109,8 @@ def update_stock(item_id, quantity):
 
 def delete_item(item_id):
     try:
-        items_table.delete_item(
-            Key={'item_id': item_id}
-        )
+        items_table.delete_item(Key={'item_id': item_id})
         return True
     except Exception as e:
         print("Delete Item Error:", e)
         return False
-
-
-# -----------------------------
-# 🔍 SEARCH FUNCTION
-# -----------------------------
-
-def search_items(query):
-    try:
-        items = get_items()
-        return [
-            item for item in items
-            if query.lower() in item.get('name', '').lower()
-        ]
-    except Exception as e:
-        print("Search Error:", e)
-        return []
